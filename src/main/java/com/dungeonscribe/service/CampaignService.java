@@ -51,7 +51,7 @@ public class CampaignService {
         User currentUser = authService.getCurrentUser();
         Campaign campaign = campaignRepository
                 .findByIdAndOwner(id, currentUser)
-                .orElseThrow(() -> new RuntimeException("Campaign Not Found"));
+                .orElseThrow(() -> new RuntimeException("Campaign not found"));
         return toResponse(campaign);
     }
 

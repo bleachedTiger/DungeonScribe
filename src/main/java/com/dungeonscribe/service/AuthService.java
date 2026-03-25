@@ -20,7 +20,7 @@ public class AuthService {
     public String register(String email, String username, String password){
         //Check if email is unique
         if(userRepository.findByEmail(email).isPresent()){
-            throw new RuntimeException(("Email already Registered"));
+            throw new RuntimeException(("Email already registered"));
         }
 
         //Build and save new User
@@ -41,7 +41,7 @@ public class AuthService {
 
         //Check that the password matches the hashed pass
         if(!passwordEncoder.matches(password, user.getPassword())){
-            throw new RuntimeException("Invalid Password");
+            throw new RuntimeException("Invalid password");
         }
 
         return jwtService.generateToken(email);

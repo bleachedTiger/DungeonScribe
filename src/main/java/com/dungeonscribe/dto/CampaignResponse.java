@@ -1,5 +1,6 @@
 package com.dungeonscribe.dto;
 
+import com.dungeonscribe.entity.User;
 import lombok.Data;
 import java.time.LocalDateTime;
 
