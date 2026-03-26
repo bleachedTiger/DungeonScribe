@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
 import ErrorMessage from '../../components/ErrorMessage'
 import EmptyState from '../../components/EmptyState'
+import ConfirmDialog from '../../components/ConfirmDialog'
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { campaignService } from "../../api/campaignService";
 import { characterService } from "../../api/characterService"
@@ -14,7 +15,8 @@ function CampaignDetails() {
     const [campaign, setCampaign] = useState(null);
     const [characters, setCharacters] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('')
+    const [confirmDialog, setConfirmDialog] = useState(null);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetchData();
@@ -40,14 +42,17 @@ function CampaignDetails() {
         }
     }
 
-    const handleDeleteCharacter = async (characterId) => {
-        if(!window.confirm("Delete this Character?")) return
-        try{
-            await characterService.delete(id, characterId);
-            setCharacters(characters.filter(c => c.id !== characterId));
-        }catch{
-            setError("Failed to delete Character");
-        }
+    const handleDeleteCharacter = async (characterId, e) => {
+        e.stopPropagation()
+        setConfirmDialog({
+            message: 'Are you sure you want to delete this character? This cannot be undone.',
+            onConfirm: async () => {
+            setConfirmDialog(null)
+            await campaignService.delete(characterId)
+            setCharacters(characters.filter(c => c.characterId !== characterId))
+            },
+            onCancel: () => setConfirmDialog(null)
+        })
     }
 
     if(loading) return(
@@ -154,6 +159,15 @@ function CampaignDetails() {
                 </div>
                 )}
             </div>
+
+            
+            {confirmDialog && (
+            <ConfirmDialog
+                message={confirmDialog.message}
+                onConfirm={confirmDialog.onConfirm}
+                onCancel={confirmDialog.onCancel}
+            />
+            )}
         </Layout>
     )
 }
