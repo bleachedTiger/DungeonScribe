@@ -42,8 +42,8 @@ function CampaignDetails() {
         }
     }
 
-    const handleDeleteCharacter = async (characterId, e) => {
-        e.stopPropagation()
+    const handleDeleteCharacter = (characterId, e) => {
+        e.stopPropagation();
         setConfirmDialog({
             message: 'Are you sure you want to delete this character? This cannot be undone.',
             onConfirm: async () => {
@@ -148,7 +148,7 @@ function CampaignDetails() {
                             Edit
                         </button>
                         <button
-                            onClick={() => handleDeleteCharacter(character.id)}
+                            onClick={(e) => handleDeleteCharacter(character.id, e)}
                             className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
                         >
                             Delete

@@ -28,18 +28,18 @@ function CampaignList() {
       setLoading(false)
     }
   }
-const handleDelete = (id, e) => {
-  e.stopPropagation()
-  setConfirmDialog({
-    message: 'Are you sure you want to delete this campaign? This cannot be undone.',
-    onConfirm: async () => {
-      setConfirmDialog(null)
-      await campaignService.delete(id)
-      setCampaigns(campaigns.filter(c => c.id !== id))
-    },
-    onCancel: () => setConfirmDialog(null)
-  })
-}
+  const handleDelete = (id, e) => {
+    e.stopPropagation()
+    setConfirmDialog({
+      message: 'Are you sure you want to delete this campaign? This cannot be undone.',
+      onConfirm: async () => {
+        setConfirmDialog(null)
+        await campaignService.delete(id)
+        setCampaigns(campaigns.filter(c => c.id !== id))
+      },
+      onCancel: () => setConfirmDialog(null)
+    })
+  }
   if (loading) return (
     <Layout>
       <div className="text-center text-gray-400 mt-20">Loading campaigns...</div>
