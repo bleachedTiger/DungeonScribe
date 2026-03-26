@@ -5,21 +5,21 @@ import ErrorMessage from '../../components/ErrorMessage'
 import { characterService } from '../../api/characterService';
 
 function CharacterForm(){
-    const {id, characterId} = useParams();
+    const {id, characterId} = useParams<{id: string, characterId: string}>();
     const isEditing = !!characterId;
     const navigate = useNavigate();
 
-    const [name, setName] = useState('');
-    const [characterClass, setCharacterClass] = useState('');
-    const [race, setRace] = useState('');
-    const [level, setLevel] = useState(1);
-    const [backstory, setBackstory] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [name, setName] = useState<string>('');
+    const [characterClass, setCharacterClass] = useState<string>('');
+    const [race, setRace] = useState<string>('');
+    const [level, setLevel] = useState<number>(1);
+    const [backstory, setBackstory] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
 
     useEffect(()=>{
-        if(isEditing) {
-            characterService.getOne(id, characterId)
+        if(isEditing && id && characterId){
+            characterService.getOne(Number(id), Number(characterId))
             .then(res => {
                 setName(res.data.name)
                 setCharacterClass(res.data.characterClass)
@@ -32,20 +32,20 @@ function CharacterForm(){
         } else {
             document.title = 'DungeonScribe | New Character';
         }
-    },[characterId, id, isEditing,name])
+    },[characterId, id, isEditing, name])
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e:React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
         try{
-            if(isEditing){
-                characterService.update(id, characterId,
-                    {name, characterClass, race, level, backstory}
-                )
+            if(isEditing && id){
+                characterService.update(Number(id), Number(characterId), {
+                    name, characterClass, race, level, backstory
+                })
             }else{
-                await characterService.create(id, {name, characterClass, race, level, backstory})
+                await characterService.create(Number(id), {name, characterClass, race, level, backstory})
             }
             navigate(`/campaigns/${id}`);
         }catch{
@@ -67,10 +67,7 @@ function CharacterForm(){
                 <h1 className="text-3xl font-bold text-white mb-8">{isEditing ? "Editing Character": "New Character"}</h1>
 
                 {error && (
-                    <ErrorMessage
-                        message={error}
-                        onRetry={handleSubmit}
-                    />
+                    <ErrorMessage message={error}/>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">

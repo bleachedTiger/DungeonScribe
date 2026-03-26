@@ -1,6 +1,15 @@
 import { useState } from 'react'
+import { StatBlockField } from '../types'
 
-function StatBlock({ title, subtitle, badge, source, fields }) {
+interface StatBlockProps {
+  title: string
+  subtitle?: string
+  badge?: string
+  source?: string
+  fields: StatBlockField[]
+}
+
+function StatBlock({ title, subtitle, badge, source, fields }: StatBlockProps) {
   const [expanded, setExpanded] = useState(false)
 
   return (

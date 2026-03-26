@@ -1,8 +1,9 @@
 import { renderHook, act } from '@testing-library/react'
 import {AuthProvider, UseAuth} from '../../context/AuthContext';
+import { ReactNode } from 'react';
 
 //Wrapper provides the AuthContext to the hook
-const wrapper = ({children}) => <AuthProvider>{children}</AuthProvider>;
+const wrapper = ({children}: {children: ReactNode}) => <AuthProvider>{children}</AuthProvider>;
 
 describe('useAuth hook', () => {
 

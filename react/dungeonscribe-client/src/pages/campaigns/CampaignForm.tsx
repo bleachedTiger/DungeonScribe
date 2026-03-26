@@ -5,20 +5,20 @@ import ErrorMessage from '../../components/ErrorMessage'
 import { campaignService } from '../../api/campaignService';
 
 function CampaignForm() {
-    const {id} = useParams();
+    const {id} = useParams<{id: string}>();
     const isEditing = !!id;
     const navigate = useNavigate();
 
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [setting, setSetting] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [name, setName] = useState<string>('');
+    const [description, setDescription] = useState<string>('');
+    const [setting, setSetting] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
 
     //If Editing, load existing Campaign Data
     useEffect(() => {
-        if(isEditing){
-            campaignService.getOne(id)
+        if(isEditing && id){
+            campaignService.getOne(Number(id))
                 .then(res => {
                     setName(res.data.name);
                     setDescription(res.data.description);
@@ -31,14 +31,14 @@ function CampaignForm() {
         }
     }, [id, isEditing, name])
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
         try{
-            if(isEditing){
-                await campaignService.update(id, { name, description, setting});
+            if(isEditing && id){
+                await campaignService.update(Number(id), { name, description, setting});
             }else{
                 await campaignService.create({name, description, setting});
             }
@@ -58,10 +58,7 @@ function CampaignForm() {
                 </h1>
 
                 {error && (
-                    <ErrorMessage
-                        message={error}
-                        onRetry={handleSubmit}
-                    />
+                    <ErrorMessage message={error}/>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-6">

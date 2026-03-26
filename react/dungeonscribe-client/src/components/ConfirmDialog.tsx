@@ -1,4 +1,6 @@
-function ConfirmDialog({ message, onConfirm, onCancel }) {
+import { ConfirmDialogState } from "../types";
+
+function ConfirmDialog({ message, onConfirm, onCancel }:ConfirmDialogState) {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 max-w-sm w-full mx-4 shadow-xl">

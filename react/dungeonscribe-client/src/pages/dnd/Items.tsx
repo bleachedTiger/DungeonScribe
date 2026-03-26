@@ -6,13 +6,14 @@ import ErrorMessage from '../../components/ErrorMessage'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { dndService } from '../../api/dndService'
 import { formatSourceLabel, formatSourceUrl } from "../../utils/sourceUtils";
+import { MagicItemDto } from '../../types';
 
 function Items() {
-  const [search, setSearch] = useState('')
-  const [items, setItems] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [total, setTotal] = useState(0)
+  const [search, setSearch] = useState<string>('')
+  const [items, setItems] = useState<MagicItemDto[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
+  const [total, setTotal] = useState<number>(0)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -26,7 +27,7 @@ function Items() {
     document.title = 'DungeonScribe | Magic Items'
   }, [])
 
-  const fetchItems = async () => {
+  const fetchItems = async (): Promise<void> => {
     setLoading(true)
     setError('')
     try {

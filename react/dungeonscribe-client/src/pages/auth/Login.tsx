@@ -2,23 +2,24 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { UseAuth } from '../../context/AuthContext';
 import api from '../../api/axios';
+import { AuthResponse } from '../../types'
 
 function Login(){
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [error, setError] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
 
     const { login } = UseAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent ): Promise<void> => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try{
-            const response = await api.post('/auth/login', {email, password});
+            const response = await api.post<AuthResponse>('/auth/login', {email, password});
             login(response.data.token);
             navigate('/campaigns');
         }catch{
