@@ -4,7 +4,7 @@ import SearchInput from '../../components/SearchInput'
 import ErrorMessage from '../../components/ErrorMessage'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { dndService } from '../../api/dndService'
-import { formatSourceLabel, formatSourceUrl } from "../../utils/sourceUtils";
+import { formatSourceLabel, formatSourceUrl } from '../../utils/sourceUtils'
 import { MonsterDto } from '../../types'
 
 interface SavingThrows {
@@ -16,6 +16,29 @@ interface SavingThrows {
   CHA: number | null
 }
 
+// ✅ 1. CollapsibleText - defined first, outside everything else
+function CollapsibleText({ text, label }: { text: string; label: string }) {
+  const [showFull, setShowFull] = useState<boolean>(false)
+  const isLong = text.length > 200
+
+  return (
+    <div className="text-sm">
+      <h4 className="text-amber-500 font-medium mb-1">{label}</h4>
+      <p className="text-gray-300">
+        {isLong && !showFull ? `${text.slice(0, 200)}...` : text}
+      </p>
+      {isLong && (
+        <button
+          onClick={() => setShowFull(!showFull)}
+          className="text-amber-500 hover:text-amber-400 text-xs mt-1 transition-colors"
+        >
+          {showFull ? 'Show less' : 'Show more'}
+        </button>
+      )}
+    </div>
+  )
+}
+
 function MonsterCard({ monster }: { monster: MonsterDto }) {
   const [expanded, setExpanded] = useState<boolean>(false)
 
@@ -25,38 +48,26 @@ function MonsterCard({ monster }: { monster: MonsterDto }) {
     return `${score} (${mod >= 0 ? '+' : ''}${mod})`
   }
 
-  // Format speed object into readable string
-const formatSpeed = (speed: Record<string, number | boolean> | undefined): string => {
-  if (!speed) return '—'
-  return Object.entries(speed)
-    .map(([type, value]) => {
-      if (typeof value === 'boolean') {
-        return value ? type : null  // "hover: true" becomes "hover"
-      }
-      return `${type} ${value}ft`   // "walk: 30" becomes "walk 30ft"
-    })
-    .filter(Boolean)
-    .join(', ')
-}
-
-  // Format actions array into readable list
-  const formatList = (items: { name: string; desc: string }[] | null) => {
-    if (!items || items.length === 0) return null
-    return items.map((item, i) => (
-      <div key={i} className="mb-2">
-        <span className="text-white font-medium">{item.name}: </span>
-        <span className="text-gray-300">{item.desc}</span>
-      </div>
-    ))
+  const formatSpeed = (speed: Record<string, number | boolean> | undefined): string => {
+    if (!speed) return '—'
+    return Object.entries(speed)
+      .map(([type, value]) => {
+        if (typeof value === 'boolean') {
+          return value ? type : null
+        }
+        return `${type} ${value}ft`
+      })
+      .filter(Boolean)
+      .join(', ')
   }
 
-  const savingThrows : SavingThrows = {
-    'STR': monster.strengthSave ?? null,
-    'DEX': monster.dexteritySave ?? null,
-    'CON': monster.constitutionSave ?? null,
-    'INT': monster.intelligenceSave ?? null,
-    'WIS': monster.wisdomSave ?? null,
-    'CHA': monster.charismaSave ?? null,
+  const savingThrows: SavingThrows = {
+    STR: monster.strengthSave ?? null,
+    DEX: monster.dexteritySave ?? null,
+    CON: monster.constitutionSave ?? null,
+    INT: monster.intelligenceSave ?? null,
+    WIS: monster.wisdomSave ?? null,
+    CHA: monster.charismaSave ?? null,
   }
 
   const hasSaves = Object.entries(savingThrows).some(([, v]) => v !== null)
@@ -122,10 +133,8 @@ const formatSpeed = (speed: Record<string, number | boolean> | undefined): strin
 
           {/* Ability scores */}
           <div>
-            <h4 className="text-amber-500 font-medium text-sm mb-2">
-              Ability Scores
-            </h4>
-            <div className="grid grid-cols-6 gap-1 text-center">
+            <h4 className="text-amber-500 font-medium text-sm mb-2">Ability Scores</h4>
+            <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 text-center">
               {[
                 { label: 'STR', value: monster.strength },
                 { label: 'DEX', value: monster.dexterity },
@@ -134,10 +143,7 @@ const formatSpeed = (speed: Record<string, number | boolean> | undefined): strin
                 { label: 'WIS', value: monster.wisdom },
                 { label: 'CHA', value: monster.charisma },
               ].map(({ label, value }) => (
-                <div
-                  key={label}
-                  className="bg-gray-700 rounded p-2"
-                >
+                <div key={label} className="bg-gray-700 rounded p-2">
                   <div className="text-amber-500 text-xs font-bold">{label}</div>
                   <div className="text-white text-xs">{abilityMod(value)}</div>
                 </div>
@@ -172,9 +178,7 @@ const formatSpeed = (speed: Record<string, number | boolean> | undefined): strin
           )}
           {monster.conditionImmunities && (
             <div className="text-sm">
-              <span className="text-amber-500 font-medium">
-                Condition Immunities:{' '}
-              </span>
+              <span className="text-amber-500 font-medium">Condition Immunities: </span>
               <span className="text-gray-300">{monster.conditionImmunities}</span>
             </div>
           )}
@@ -195,19 +199,16 @@ const formatSpeed = (speed: Record<string, number | boolean> | undefined): strin
 
           {/* Description */}
           {monster.desc && (
-            <div className="text-sm">
-              <h4 className="text-amber-500 font-medium mb-1">Description</h4>
-              <p className="text-gray-300">{monster.desc}</p>
-            </div>
+            <CollapsibleText text={monster.desc} label="Description" />
           )}
 
           {/* Special Abilities */}
           {monster.specialAbilities && monster.specialAbilities.length > 0 && (
             <div className="text-sm">
-              <h4 className="text-amber-500 font-medium mb-2">
-                Special Abilities
-              </h4>
-              {formatList(monster.specialAbilities)}
+              <h4 className="text-amber-500 font-medium mb-2">Special Abilities</h4>
+              {monster.specialAbilities.map((ability, i) => (
+                <CollapsibleText key={i} text={ability.desc} label={ability.name} />
+              ))}
             </div>
           )}
 
@@ -215,17 +216,19 @@ const formatSpeed = (speed: Record<string, number | boolean> | undefined): strin
           {monster.actions && monster.actions.length > 0 && (
             <div className="text-sm">
               <h4 className="text-amber-500 font-medium mb-2">Actions</h4>
-              {formatList(monster.actions)}
+              {monster.actions.map((action, i) => (
+                <CollapsibleText key={i} text={action.desc} label={action.name} />
+              ))}
             </div>
           )}
 
           {/* Legendary Actions */}
           {monster.legendaryActions && monster.legendaryActions.length > 0 && (
             <div className="text-sm">
-              <h4 className="text-amber-500 font-medium mb-2">
-                Legendary Actions
-              </h4>
-              {formatList(monster.legendaryActions)}
+              <h4 className="text-amber-500 font-medium mb-2">Legendary Actions</h4>
+              {monster.legendaryActions.map((action, i) => (
+                <CollapsibleText key={i} text={action.desc} label={action.name} />
+              ))}
             </div>
           )}
 
@@ -297,20 +300,14 @@ function Monsters() {
         />
       </div>
 
-      {error && (
-        <ErrorMessage
-          message={error}
-          onRetry={fetchMonsters}
-        />
-      )}
-
+      {error && <ErrorMessage message={error} onRetry={fetchMonsters} />}
 
       {loading ? (
-          <LoadingSpinner message="Loading your search results..." />
+        <LoadingSpinner message="Loading your search results..." />
       ) : (
-          <div className="text-gray-400 text-sm mb-4">
+        <div className="text-gray-400 text-sm mb-4">
           {`${total} monsters found`}
-      </div>
+        </div>
       )}
 
       <div className="space-y-3">

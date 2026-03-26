@@ -73,28 +73,33 @@ function CampaignDetails() {
 
     return(
         <Layout>
+            {/* Campaign Header */}
             <div className="mb-8">
-                <div className="flex items-start justify-between">
-                    <div>
-                        <button
-                            onClick={() => navigate("/campaigns")}
-                            className="text-gray-400 hover:text-white text-sm mb-4 flex items-center gap-1"
-                        >
-                            ← Back to Campaigns
-                        </button>
-                        <h1 className="text-3xl font-bold text-white">{campaign.name}</h1>
-                        <p className="text-amber-500 mt-1">{campaign.setting}</p>
-                    </div>
-                    <button
-                        onClick={() => navigate(`/campaigns/${id}/edit`)}
-                        className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded transition-colors"
-                    >
-                    Edit Campaign
-                    </button>
+            {/* Breadcrumb - full width on its own line */}
+            <button
+                onClick={() => navigate('/campaigns')}
+                className="text-gray-400 hover:text-white text-sm mb-4 flex items-center gap-1"
+            >
+                ← Back to Campaigns
+            </button>
+
+            {/* Title row - stacks on mobile, side by side on desktop */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                <h1 className="text-3xl font-bold text-white">{campaign.name}</h1>
+                <p className="text-amber-500 mt-1">{campaign.setting}</p>
                 </div>
-                {campaign.description && (
-                    <p className="text-gray-400 mt-4 max-w w-2xl">{campaign.description}</p>
-                )}
+                <button
+                onClick={() => navigate(`/campaigns/${id}/edit`)}
+                className="bg-gray-700 hover:bg-gray-600 text-gray-300 px-4 py-2 rounded transition-colors self-start"
+                >
+                Edit Campaign
+                </button>
+            </div>
+
+            {campaign.description && (
+                <p className="text-gray-400 mt-4 max-w-2xl">{campaign.description}</p>
+            )}
             </div>
 
             {error && (
