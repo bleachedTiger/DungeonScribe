@@ -43,7 +43,7 @@ function CampaignDetails() {
     }
 
     const handleDeleteCharacter = async (characterId, e) => {
-        e.stopPropagation()
+        e.stopPropagation();
         setConfirmDialog({
             message: 'Are you sure you want to delete this character? This cannot be undone.',
             onConfirm: async () => {
