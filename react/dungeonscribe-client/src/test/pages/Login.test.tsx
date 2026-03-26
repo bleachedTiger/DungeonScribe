@@ -4,6 +4,8 @@ import {MemoryRouter} from "react-router-dom";
 import Login from "../../pages/auth/Login";
 import { AuthProvider } from "../../context/AuthContext";
 import api from "../../api/axios";
+import { AuthResponse } from '../../types'
+import { AxiosResponse } from 'axios'
 
 //Mocking the API module
 vi.mock("../../api/axios", () => ({
@@ -42,7 +44,7 @@ describe("Login", () => {
 
     it("should show error message on failed login", async () => {
         //Arrange - make the API call reject with an error
-        api.post.mockRejectedValueOnce(new Error("Invalid credentials"));
+        vi.mocked(api.post).mockRejectedValueOnce(new Error("Invalid credentials"));
 
         renderLogin();
 
@@ -63,7 +65,7 @@ describe("Login", () => {
 
 it('should disable submit button while loading', async () => {
   // Arrange - make API call hang indefinitely
-  api.post.mockImplementationOnce(() => new Promise(() => {}))
+  vi.mocked(api.post).mockImplementationOnce(() => new Promise<AxiosResponse<AuthResponse>>(() => {}))
 
   renderLogin()
 

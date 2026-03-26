@@ -1,5 +1,6 @@
 import api from '../../api/axios'
 import { campaignService } from '../../api/campaignService'
+import { Campaign } from '../../types';
 
 // Mock the axios module
 vi.mock('../../api/axios', () => ({
@@ -23,11 +24,13 @@ describe('campaignService', () => {
     });
 
     it('getAll should call GET /campaigns', async () => {
-        const mockCampaigns = [
-            {id: 1, name: 'Lost Mines', setting: 'Forgotten Realms'},
-            {id: 2, name: 'Curse of Strahd', setting: 'Ravenloft'},
+        const mockCampaigns: Campaign[] = [
+            {id: 1, name: 'Lost Mines', setting: 'Forgotten Realms', 
+                description: 'A classic D&D adventure', createdAt: "2024-01-01", ownerUsername:"testuser"},
+            {id: 2, name: 'Curse of Strahd', setting: 'Ravenloft', 
+                description: 'A horror-themed campaign', createdAt: "2024-01-01", ownerUsername:"testuser"},
         ];
-        api.get.mockResolvedValue({data: mockCampaigns});
+        vi.mocked(api.get).mockResolvedValue({data: mockCampaigns});
 
         const response = await campaignService.getAll();
 
@@ -37,7 +40,7 @@ describe('campaignService', () => {
 
     it("getOne should call GET /campaigns/:id", async () => {
         const mockCampaign = {id: 1, name: 'Lost Mines'};
-        api.get.mockResolvedValue({data: mockCampaign});
+        vi.mocked(api.get).mockResolvedValue({data: mockCampaign});
 
         const response = await campaignService.getOne(1);
 
@@ -47,8 +50,8 @@ describe('campaignService', () => {
 
     it("create should call POST /campaigns with data", async () => {
         const mockCampaign = {id: 1, name: 'LostMines', description: 'A classic D&D adventure', setting: 'Forgotten Realms'};
-        const mockResponse = { id: 1, ...mockCampaign };
-        api.post.mockResolvedValueOnce({data: mockResponse});
+        const mockResponse: Campaign = {...mockCampaign, createdAt: "2024-01-01", ownerUsername:"testuser" };
+        vi.mocked(api.post).mockResolvedValueOnce({data: mockResponse});
 
         const response = await campaignService.create(mockCampaign);
         
@@ -58,8 +61,8 @@ describe('campaignService', () => {
 
     it("update should call PUT /campaigns/:id with data", async () => {
         const mockCampaign = {id: 1, name: 'Lost Mines', description: 'Updated description', setting: 'Eberron'};
-        const mockResponse = { id: 1, ...mockCampaign };
-        api.put.mockResolvedValueOnce({data: mockResponse});
+        const mockResponse: Campaign = {...mockCampaign, createdAt: "2024-01-01", ownerUsername:"testuser" };
+        vi.mocked(api.put).mockResolvedValueOnce({data: mockResponse});
 
         const response = await campaignService.update(1, mockCampaign);
 
@@ -68,7 +71,7 @@ describe('campaignService', () => {
     });
 
     it("delete should call DELETE /campaigns/:id", async () => {
-        api.delete.mockResolvedValueOnce({data: null });
+        vi.mocked(api.delete).mockResolvedValueOnce({data: null });
 
         await campaignService.delete(1);
 
@@ -76,7 +79,7 @@ describe('campaignService', () => {
     });
 
     it("getAll should throw an error if API call fails", async () => {
-        api.get.mockRejectedValueOnce(new Error('Network error'));
+        vi.mocked(api.get).mockRejectedValueOnce(new Error('Network error'));
 
         await expect(campaignService.getAll()).rejects.toThrow('Network error');
     });
