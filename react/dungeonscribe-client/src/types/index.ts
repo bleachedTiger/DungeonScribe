@@ -84,12 +84,12 @@ export interface MonsterDto {
   type: string
   subtype?: string
   alignment: string
-  armorClass: number
+  armor_class: number
   armorDesc?: string
-  hitPoints: number
-  hitDice: string
+  hit_points: number
+  hit_dice: string
   cr: number
-  challengeRating: string
+  challenge_rating: string
   strength: number
   dexterity: number
   constitution: number
