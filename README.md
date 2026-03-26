@@ -1,4 +1,4 @@
-Live demo : https://dungeon-scribe.vercel.app
+Live demo : https://dungeon-scribe.meeplehq.com
 Backend URL : dungeonscribe-production.up.railway.app
 
 <img width="1920" height="954" alt="campaigns" src="https://github.com/user-attachments/assets/c2d230ae-b8b4-40e8-87ea-4f8cebe24e75" />
