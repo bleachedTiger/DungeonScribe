@@ -1,5 +1,5 @@
 import {render, screen} from '@testing-library/react';
-import LoadingSpinner from '../components/LoadingSpinner';  
+import LoadingSpinner from '../../components/LoadingSpinner';  
 
 describe('LoadingSpinner', () => {
     it('should render with default message', () => {
