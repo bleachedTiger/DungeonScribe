@@ -28,7 +28,7 @@ function CampaignList() {
       setLoading(false)
     }
   }
-  const handleDelete = async (id, e) => {
+  const handleDelete = (id, e) => {
     e.stopPropagation()
     setConfirmDialog({
       message: 'Are you sure you want to delete this campaign? This cannot be undone.',
