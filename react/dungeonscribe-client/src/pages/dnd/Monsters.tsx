@@ -93,7 +93,7 @@ function MonsterCard({ monster }: { monster: MonsterDto }) {
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-3">
               <span className="bg-amber-600 text-white text-xs px-2 py-1 rounded">
-                CR {monster.challenge_rating}
+                CR {monster.challengeRating}
               </span>
               <span className="text-gray-400 text-sm">
                 {expanded ? '▲' : '▼'}
@@ -115,14 +115,14 @@ function MonsterCard({ monster }: { monster: MonsterDto }) {
             <div>
               <span className="text-amber-500 font-medium">AC: </span>
               <span className="text-gray-300">
-                {monster.armor_class}
+                {monster.armorClass}
                 {monster.armorDesc ? ` (${monster.armorDesc})` : ''}
               </span>
             </div>
             <div>
               <span className="text-amber-500 font-medium">HP: </span>
               <span className="text-gray-300">
-                {monster.hit_points} ({monster.hit_dice})
+                {monster.hitPoints} ({monster.hitDice})
               </span>
             </div>
             <div>
