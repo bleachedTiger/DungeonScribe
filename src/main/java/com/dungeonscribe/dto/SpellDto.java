@@ -15,7 +15,7 @@ public class SpellDto {
     private String range;
     private String duration;
 
-    @JsonProperty("casting_time")
+    @JsonAlias("casting_time")
     private String castingTime;
 
     private String components;

@@ -2,7 +2,7 @@ package com.dungeonscribe.dto;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 
 import java.util.List;
@@ -20,19 +20,19 @@ public class MonsterDto {
     private String languages;
     private String desc;
 
-    @JsonProperty("armor_class")
+    @JsonAlias("armor_class")
     private int armorClass;
 
-    @JsonProperty("armor_desc")
+    @JsonAlias("armor_desc")
     private String armorDesc;
 
-    @JsonProperty("hit_points")
+    @JsonAlias("hit_points")
     private int hitPoints;
 
-    @JsonProperty("hit_dice")
+    @JsonAlias("hit_dice")
     private String hitDice;
 
-    @JsonProperty("challenge_rating")
+    @JsonAlias("challenge_rating")
     private String challengeRating;
 
     // Ability scores
@@ -44,35 +44,35 @@ public class MonsterDto {
     private int charisma;
 
     // Saving throws
-    @JsonProperty("strength_save")
+    @JsonAlias("strength_save")
     private Integer strengthSave;
 
-    @JsonProperty("dexterity_save")
+    @JsonAlias("dexterity_save")
     private Integer dexteritySave;
 
-    @JsonProperty("constitution_save")
+    @JsonAlias("constitution_save")
     private Integer constitutionSave;
 
-    @JsonProperty("intelligence_save")
+    @JsonAlias("intelligence_save")
     private Integer intelligenceSave;
 
-    @JsonProperty("wisdom_save")
+    @JsonAlias("wisdom_save")
     private Integer wisdomSave;
 
-    @JsonProperty("charisma_save")
+    @JsonAlias("charisma_save")
     private Integer charismaSave;
 
     // Damage modifiers
-    @JsonProperty("damage_vulnerabilities")
+    @JsonAlias("damage_vulnerabilities")
     private String damageVulnerabilities;
 
-    @JsonProperty("damage_resistances")
+    @JsonAlias("damage_resistances")
     private String damageResistances;
 
-    @JsonProperty("damage_immunities")
+    @JsonAlias("damage_immunities")
     private String damageImmunities;
 
-    @JsonProperty("condition_immunities")
+    @JsonAlias("condition_immunities")
     private String conditionImmunities;
 
     // Speed is an object e.g. { "walk": 30, "fly": 60 }
@@ -81,10 +81,10 @@ public class MonsterDto {
     // Actions and abilities are arrays of objects
     private List<Map<String, String>> actions;
 
-    @JsonProperty("special_abilities")
+    @JsonAlias("special_abilities")
     private List<Map<String, String>> specialAbilities;
 
-    @JsonProperty("legendary_actions")
+    @JsonAlias("legendary_actions")
     private List<Map<String, String>> legendaryActions;
 
     @JsonAlias("document__title")
