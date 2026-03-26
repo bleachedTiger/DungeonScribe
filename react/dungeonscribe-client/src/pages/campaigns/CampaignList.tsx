@@ -5,12 +5,13 @@ import ErrorMessage from '../../components/ErrorMessage'
 import EmptyState from '../../components/EmptyState'
 import ConfirmDialog from '../../components/ConfirmDialog'
 import { campaignService } from '../../api/campaignService'
+import { Campaign, ConfirmDialogState} from '../../types'
 
 function CampaignList() {
-  const [campaigns, setCampaigns] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [confirmDialog, setConfirmDialog] = useState(null);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string>('');
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,7 +19,7 @@ function CampaignList() {
     document.title = 'DungeonScribe | Campaigns';
   }, [])
 
-  const fetchCampaigns = async () => {
+  const fetchCampaigns = async (): Promise<void> => {
     try {
       const response = await campaignService.getAll()
       setCampaigns(response.data)
@@ -28,7 +29,7 @@ function CampaignList() {
       setLoading(false)
     }
   }
-  const handleDelete = (id, e) => {
+  const handleDelete = (id:number, e:React.MouseEvent): void => {
     e.stopPropagation()
     setConfirmDialog({
       message: 'Are you sure you want to delete this campaign? This cannot be undone.',

@@ -7,16 +7,17 @@ import ConfirmDialog from '../../components/ConfirmDialog'
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { campaignService } from "../../api/campaignService";
 import { characterService } from "../../api/characterService"
+import { Campaign, PlayerCharacter, ConfirmDialogState } from "../../types";
 
 function CampaignDetails() {
-    const {id} = useParams();
+    const {id} = useParams<{id: string}>();
     const navigate = useNavigate();
 
-    const [campaign, setCampaign] = useState(null);
-    const [characters, setCharacters] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [confirmDialog, setConfirmDialog] = useState(null);
-    const [error, setError] = useState('');
+    const [campaign, setCampaign] = useState<Campaign | null>(null);
+    const [characters, setCharacters] = useState<PlayerCharacter[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState | null>(null);
+    const [error, setError] = useState<string>('');
 
     useEffect(() => {
         fetchData();
@@ -30,8 +31,8 @@ function CampaignDetails() {
     const fetchData = async () => {
         try{
             const[campaignRes, charactersRes] = await Promise.all([
-                campaignService.getOne(id),
-                characterService.getAll(id),
+                campaignService.getOne(Number(id)),
+                characterService.getAll(Number(id))
             ])
             setCampaign(campaignRes.data);
             setCharacters(charactersRes.data);
@@ -42,16 +43,19 @@ function CampaignDetails() {
         }
     }
 
-    const handleDeleteCharacter = (characterId, e) => {
-        e.stopPropagation();
+    const handleDeleteCharacter = (characterId: number): void => {
         setConfirmDialog({
             message: 'Are you sure you want to delete this character? This cannot be undone.',
             onConfirm: async () => {
             setConfirmDialog(null)
-            await campaignService.delete(characterId)
-            setCharacters(characters.filter(c => c.characterId !== characterId))
-            },
-            onCancel: () => setConfirmDialog(null)
+            try{    
+            await characterService.delete(Number(id), characterId)
+            setCharacters(characters.filter(c => c.id !== characterId))
+            }catch{
+                setError("Failed to delete character")
+            }
+        },
+        onCancel: () => setConfirmDialog(null)
         })
     }
 
@@ -148,7 +152,7 @@ function CampaignDetails() {
                             Edit
                         </button>
                         <button
-                            onClick={(e) => handleDeleteCharacter(character.id, e)}
+                            onClick={() => handleDeleteCharacter(character.id)}
                             className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
                         >
                             Delete

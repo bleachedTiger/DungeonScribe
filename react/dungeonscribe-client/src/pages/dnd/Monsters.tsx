@@ -5,18 +5,28 @@ import ErrorMessage from '../../components/ErrorMessage'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { dndService } from '../../api/dndService'
 import { formatSourceLabel, formatSourceUrl } from "../../utils/sourceUtils";
+import { MonsterDto } from '../../types'
 
-function MonsterCard({ monster }) {
-  const [expanded, setExpanded] = useState(false)
+interface SavingThrows {
+  STR: number | null
+  DEX: number | null
+  CON: number | null
+  INT: number | null
+  WIS: number | null
+  CHA: number | null
+}
+
+function MonsterCard({ monster }: { monster: MonsterDto }) {
+  const [expanded, setExpanded] = useState<boolean>(false)
 
   // Format ability score with modifier
-  const abilityMod = (score) => {
+  const abilityMod = (score: number): string => {
     const mod = Math.floor((score - 10) / 2)
     return `${score} (${mod >= 0 ? '+' : ''}${mod})`
   }
 
   // Format speed object into readable string
-const formatSpeed = (speed) => {
+const formatSpeed = (speed: Record<string, number | boolean> | undefined): string => {
   if (!speed) return '—'
   return Object.entries(speed)
     .map(([type, value]) => {
@@ -30,7 +40,7 @@ const formatSpeed = (speed) => {
 }
 
   // Format actions array into readable list
-  const formatList = (items) => {
+  const formatList = (items: { name: string; desc: string }[] | null) => {
     if (!items || items.length === 0) return null
     return items.map((item, i) => (
       <div key={i} className="mb-2">
@@ -40,13 +50,13 @@ const formatSpeed = (speed) => {
     ))
   }
 
-  const savingThrows = {
-    'STR': monster.strength_save,
-    'DEX': monster.dexterity_save,
-    'CON': monster.constitution_save,
-    'INT': monster.intelligence_save,
-    'WIS': monster.wisdom_save,
-    'CHA': monster.charisma_save,
+  const savingThrows : SavingThrows = {
+    'STR': monster.strengthSave ?? null,
+    'DEX': monster.dexteritySave ?? null,
+    'CON': monster.constitutionSave ?? null,
+    'INT': monster.intelligenceSave ?? null,
+    'WIS': monster.wisdomSave ?? null,
+    'CHA': monster.charismaSave ?? null,
   }
 
   const hasSaves = Object.entries(savingThrows).some(([, v]) => v !== null)
@@ -72,7 +82,7 @@ const formatSpeed = (speed) => {
           <div className="flex flex-col items-end gap-1">
             <div className="flex items-center gap-3">
               <span className="bg-amber-600 text-white text-xs px-2 py-1 rounded">
-                CR {monster.challenge_rating}
+                CR {monster.challengeRating}
               </span>
               <span className="text-gray-400 text-sm">
                 {expanded ? '▲' : '▼'}
@@ -94,14 +104,14 @@ const formatSpeed = (speed) => {
             <div>
               <span className="text-amber-500 font-medium">AC: </span>
               <span className="text-gray-300">
-                {monster.armor_class}
-                {monster.armor_desc ? ` (${monster.armor_desc})` : ''}
+                {monster.armorClass}
+                {monster.armorDesc ? ` (${monster.armorDesc})` : ''}
               </span>
             </div>
             <div>
               <span className="text-amber-500 font-medium">HP: </span>
               <span className="text-gray-300">
-                {monster.hit_points} ({monster.hit_dice})
+                {monster.hitPoints} ({monster.hitDice})
               </span>
             </div>
             <div>
@@ -240,11 +250,11 @@ const formatSpeed = (speed) => {
 }
 
 function Monsters() {
-  const [search, setSearch] = useState('')
-  const [monsters, setMonsters] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [total, setTotal] = useState(0)
+  const [search, setSearch] = useState<string>('')
+  const [monsters, setMonsters] = useState<MonsterDto[]>([])
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
+  const [total, setTotal] = useState<number>(0)
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -258,7 +268,7 @@ function Monsters() {
     document.title = 'DungeonScribe | Monsters'
   }, [])
 
-  const fetchMonsters = async () => {
+  const fetchMonsters = async (): Promise<void> => {
     setLoading(true)
     setError('')
     try {

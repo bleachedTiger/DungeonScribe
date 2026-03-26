@@ -2,14 +2,15 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { UseAuth } from "../../context/AuthContext";
 import api from "../../api/axios";
+import { AuthResponse } from "../../types";
 
 function Register(){
 
-    const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [email, setEmail] = useState<string>('');
+    const [username, setUsername] = useState<string>('');
+    const [password, setPassword] = useState<string>('');
+    const [error, setError] = useState<string>('');
+    const [loading, setLoading] = useState<boolean>(false);
 
     const { login } = UseAuth();
     const navigate = useNavigate();
@@ -19,13 +20,13 @@ function Register(){
     }, [])
 
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         setError('');
         setLoading(true);
 
         try {
-            const response = await api.post("/auth/register", {
+            const response = await api.post<AuthResponse>("/auth/register", {
                 email,
                 username,
                 password,

@@ -6,13 +6,14 @@ import ErrorMessage from '../../components/ErrorMessage'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { dndService } from '../../api/dndService'
 import { formatSourceLabel, formatSourceUrl } from "../../utils/sourceUtils";
+import { SpellDto } from "../../types";
 
 function Spells() {
-    const [search, setSearch] = useState('');
-    const [spells, setSpells] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [total, setTotal] = useState(0);
+    const [search, setSearch] = useState<string>('');
+    const [spells, setSpells] = useState<SpellDto[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
+    const [total, setTotal] = useState<number>(0);
 
     //Debouncer - fires search after 500ms
     useEffect(() => {
@@ -29,7 +30,7 @@ function Spells() {
         document.title = 'DungeonScribe | Spells'
     }, [])
 
-    const fetchSpells = async () => {
+    const fetchSpells = async (): Promise<void> => {
         setLoading(true);
         setError('');
         try{

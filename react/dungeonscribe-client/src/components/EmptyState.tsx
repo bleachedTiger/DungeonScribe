@@ -1,4 +1,11 @@
-function EmptyState({icon, message, actionLabel, onAction}) {
+interface EmptyStateProps{
+    icon?:string;
+    message:string;
+    actionLabel?:string;
+    onAction?:() => void;
+}
+
+function EmptyState({icon, message, actionLabel, onAction}:EmptyStateProps) {
     return(
         <div className="flex flex-col items-center justify-center py-20 gap-4 bg-gray-800 rounded-lg border border-gray-700">
             {icon && <span className="text-5xl">{icon}</span>}
