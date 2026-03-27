@@ -50,7 +50,7 @@ class CharacterServiceTest {
         testUser = new User();
         testUser.setId(1L);
         testUser.setEmail("test@test.com");
-        testUser.setUsername("testuser");
+        testUser.setUsername("testUser");
 
         testCampaign = new Campaign();
         testCampaign.setId(1L);
@@ -64,7 +64,7 @@ class CharacterServiceTest {
         testCharacter.setRace("Elf");
         testCharacter.setLevel(1);
         testCharacter.setBackstory("A mysterious elf");
-        testCharacter.setCampaign(testCampaign);
+        testCharacter.setOwner(testUser);
 
         testRequest = new CharacterRequest();
         testRequest.setName("Aria Swiftblade");
@@ -77,91 +77,29 @@ class CharacterServiceTest {
     void createCharacter_ShouldReturnResponse_WhenValidInput(){
 
         when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(1L, testUser))
-                .thenReturn(Optional.of(testCampaign));
         when(characterRepository.save(any(PlayerCharacter.class)))
                 .thenReturn(testCharacter);
 
-        CharacterResponse response = characterService.createCharacter(1L, testRequest);
+        CharacterResponse response = characterService.createCharacter(testRequest);
 
         assertThat(response).isNotNull();
         assertThat(response.getName()).isEqualTo("Aria Swiftblade");
         assertThat(response.getCharacterClass()).isEqualTo("Rogue");
         assertThat(response.getRace()).isEqualTo("Elf");
         assertThat(response.getLevel()).isEqualTo(1);
-        assertThat(response.getCampaignId()).isEqualTo(1L);
+        assertThat(response.getOwnerUsername()).isEqualTo("testUser");
     }
 
     @Test
-    void createCharacter_ShouldThrowException_WhenCampaignNotFound(){
-
+    void getMyCharacters_ShouldReturnList_WhenUserHasCharacters(){
         when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(99L, testUser))
-                .thenReturn(Optional.empty());
-
-        assertThatThrownBy(() ->
-                characterService.createCharacter(99L, testRequest))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Campaign not found");
-    }
-
-    @Test
-    void getCharacters_ShouldReturnList_WhenCampaignHasCharacters(){
-        when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(1L, testUser))
-                .thenReturn(Optional.of(testCampaign));
-        when(characterRepository.findByCampaign(testCampaign))
+        when(characterRepository.findByOwner(testUser))
                 .thenReturn(List.of(testCharacter));
 
-        List<CharacterResponse> responses = characterService.getCharacters(1L);
+        List<CharacterResponse> responses = characterService.getMyCharacters();
 
         assertThat(responses).hasSize(1);
         assertThat(responses.getFirst().getName()).isEqualTo("Aria Swiftblade");
-    }
-
-    @Test
-    void getCharacters_ShouldReturnEmptyList_WhenCampaignHasNoCharacters(){
-
-        when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(1L, testUser))
-                .thenReturn(Optional.of(testCampaign));
-        when(characterRepository.findByCampaign(testCampaign))
-                .thenReturn(List.of());
-
-        List<CharacterResponse> responses = characterService.getCharacters(1L);
-
-        assertThat(responses).isEmpty();
-    }
-
-    @Test
-    void getCharacter_ShouldReturnResponse_WhenCharacterExists(){
-
-        when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(1L, testUser))
-                .thenReturn(Optional.of(testCampaign));
-        when(characterRepository.findByIdAndCampaign(1L, testCampaign))
-                .thenReturn(Optional.of(testCharacter));
-
-        CharacterResponse response = characterService.getCharacter(1L,1L);
-
-        assertThat(response).isNotNull();
-        assertThat(response.getId()).isEqualTo(1L);
-        assertThat(response.getName()).isEqualTo("Aria Swiftblade");
-    }
-
-    @Test
-    void getCharacter_ShouldThrowException_WhenCharacterNotFound(){
-
-        when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(1L, testUser))
-                .thenReturn(Optional.of(testCampaign));
-        when(characterRepository.findByIdAndCampaign(99L, testCampaign))
-                .thenReturn(Optional.empty());
-
-        assertThatThrownBy(() ->
-                characterService.getCharacter(1L, 99L))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Character not found");
     }
 
     @Test
@@ -180,17 +118,15 @@ class CharacterServiceTest {
         updatedCharacter.setRace("Elf");
         updatedCharacter.setLevel(5);
         updatedCharacter.setBackstory("Updated backstory");
-        updatedCharacter.setCampaign(testCampaign);
+        updatedCharacter.setOwner(testUser);
 
         when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(1L, testUser))
-                .thenReturn(Optional.of(testCampaign));
-        when(characterRepository.findByIdAndCampaign(1L, testCampaign))
+        when(characterRepository.findByIdAndOwner(1L, testUser))
                 .thenReturn(Optional.of(testCharacter));
         when(characterRepository.save(any(PlayerCharacter.class)))
                 .thenReturn(updatedCharacter);
 
-        CharacterResponse response = characterService.updateCharacter(1L,1L, updateRequest);
+        CharacterResponse response = characterService.updateCharacter(1L, updateRequest);
 
         assertThat(response.getLevel()).isEqualTo(5);
         assertThat(response.getBackstory()).isEqualTo("Updated backstory");
@@ -200,26 +136,34 @@ class CharacterServiceTest {
     void deleteCharacter_ShouldDelete_WhenOwnerRequests(){
 
         when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(1L, testUser))
-                .thenReturn(Optional.of(testCampaign));
-        when(characterRepository.findByIdAndCampaign(1L,testCampaign))
+        when(characterRepository.findByIdAndOwner(1L,testUser))
                 .thenReturn(Optional.of(testCharacter));
 
-        characterService.deleteCharacter(1L,1L);
+        characterService.deleteCharacter(1L);
 
         verify(characterRepository).delete(testCharacter);
     }
 
     @Test
-    void deleteCharacter_ShouldThrowException_WhenCampaignNotOwned(){
-
+    void deleteCharacter_ShouldThrowException_WhenCharacterNotFound() {
         when(authService.getCurrentUser()).thenReturn(testUser);
-        when(campaignRepository.findByIdAndOwner(99L, testUser))
+        when(characterRepository.findByIdAndOwner(99L, testUser))
                 .thenReturn(Optional.empty());
 
-        assertThatThrownBy(()->
-                characterService.deleteCharacter(99L,1L))
+        assertThatThrownBy(() -> characterService.deleteCharacter(99L))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Campaign not found");
+                .hasMessageContaining("Character not found");
+    }
+
+    @Test
+    void updateCharacter_ShouldThrowException_WhenCharacterNotFound() {
+        when(authService.getCurrentUser()).thenReturn(testUser);
+        when(characterRepository.findByIdAndOwner(99L, testUser))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                characterService.updateCharacter(99L, testRequest))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Character not found");
     }
 }
