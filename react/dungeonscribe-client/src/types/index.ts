@@ -50,8 +50,7 @@ export interface PlayerCharacter {
   race: string
   level: number
   backstory?: string
-  campaignId: number
-  campaignName: string
+  ownerUsername: string
 }
 
 export interface CharacterRequest {
@@ -140,6 +139,7 @@ export interface ConfirmDialogState {
   message: string
   onConfirm: () => void
   onCancel: () => void
+  confirmLabel?: string
 }
 
 export interface StatBlockField {

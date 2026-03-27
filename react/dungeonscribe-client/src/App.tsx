@@ -6,7 +6,8 @@ import Register from "./pages/auth/Register";
 import CampaignList from "./pages/campaigns/CampaignList";
 import CampaignForm from "./pages/campaigns/CampaignForm";
 import CampaignDetails from "./pages/campaigns/CampaignDetails";
-import CharacterForm from "./pages/campaigns/CharacterForm";
+import CharacterForm from "./pages/characters//CharacterForm";
+import CharacterList from "./pages/characters/CharacterList";
 import Spells from './pages/dnd/Spells';
 import Monsters from './pages/dnd/Monsters';
 import Items from './pages/dnd/Items';
@@ -34,13 +35,16 @@ function App() {
           <Route path="/campaigns/:id/edit" element={
             <ProtectedRoute><CampaignForm /></ProtectedRoute>
           } />
-          <Route path="/campaigns/:id/characters/new" element={
+          <Route path="/characters" element={
+            <ProtectedRoute><CharacterList /></ProtectedRoute>
+          } />
+          <Route path="/characters/new" element={
             <ProtectedRoute><CharacterForm /></ProtectedRoute>
           } />
-          <Route path="/campaigns/:id/characters/:characterId/edit" element={
+          <Route path="/characters/:id/edit" element={
             <ProtectedRoute><CharacterForm /></ProtectedRoute>
           } />
-          {/* D&D Reference Routes */}
+          {/* D&D Reference Routes */}  
           <Route path="/dnd/spells" element={
             <ProtectedRoute><Spells /></ProtectedRoute>
           } />

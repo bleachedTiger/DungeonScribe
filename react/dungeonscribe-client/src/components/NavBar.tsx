@@ -40,6 +40,12 @@ function Navbar() {
               Campaigns
             </Link>
             <Link
+              to="/characters"
+              className="text-gray-300 hover:text-white transition-colors"
+            >
+              Characters
+            </Link>
+            <Link
               to="/dnd/spells"
               className="text-gray-300 hover:text-white transition-colors"
             >
@@ -94,6 +100,20 @@ function Navbar() {
               className="text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded transition-colors"
             >
               Campaigns
+            </Link>
+            <Link
+              to="/characters"
+              onClick={handleNavClick}
+              className="text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded transition-colors"
+            >
+              Characters
+            </Link>
+            <Link
+              to="/dnd/spells"
+              onClick={handleNavClick}
+              className="text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded transition-colors"
+            >
+              Spells
             </Link>
             <Link
               to="/dnd/spells"

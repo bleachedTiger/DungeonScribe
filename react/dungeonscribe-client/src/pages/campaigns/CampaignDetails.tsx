@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout";
-import ErrorMessage from '../../components/ErrorMessage'
-import EmptyState from '../../components/EmptyState'
-import ConfirmDialog from '../../components/ConfirmDialog'
+import ErrorMessage from "../../components/ErrorMessage"
+import EmptyState from "../../components/EmptyState"
+import ConfirmDialog from "../../components/ConfirmDialog"
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { campaignService } from "../../api/campaignService";
 import { characterService } from "../../api/characterService"
+import AssignCharacterModal from "../../components/AssignCharacterModal";
 import { Campaign, PlayerCharacter, ConfirmDialogState } from "../../types";
 
 function CampaignDetails() {
@@ -18,6 +19,7 @@ function CampaignDetails() {
     const [loading, setLoading] = useState<boolean>(true);
     const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState | null>(null);
     const [error, setError] = useState<string>('');
+    const [showAssignModal, setShowAssignModal] = useState<boolean>(false)
 
     useEffect(() => {
         fetchData();
@@ -28,11 +30,11 @@ function CampaignDetails() {
         if (campaign) document.title = `DungeonScribe | ${campaign.name}`;
     }, [campaign])
 
-    const fetchData = async () => {
+    const fetchData = async ():Promise<void> => {
         try{
             const[campaignRes, charactersRes] = await Promise.all([
                 campaignService.getOne(Number(id)),
-                characterService.getAll(Number(id))
+                characterService.getByCampaignCharacters(Number(id))
             ])
             setCampaign(campaignRes.data);
             setCharacters(charactersRes.data);
@@ -43,20 +45,27 @@ function CampaignDetails() {
         }
     }
 
-    const handleDeleteCharacter = (characterId: number): void => {
+    const handleRemoveCharacter = (characterId: number): void => {
         setConfirmDialog({
-            message: 'Are you sure you want to delete this character? This cannot be undone.',
+            message: 'Remove this character from this campaign? The character will not be deleted.',
+            confirmLabel: 'Remove',
             onConfirm: async () => {
-            setConfirmDialog(null)
-            try{    
-            await characterService.delete(Number(id), characterId)
-            setCharacters(characters.filter(c => c.id !== characterId))
-            }catch{
-                setError("Failed to delete character")
-            }
-        },
-        onCancel: () => setConfirmDialog(null)
+                setConfirmDialog(null)
+                try{    
+                await characterService.removeFromCampaign(Number(id), characterId)
+                setCharacters(characters.filter(c => c.id !== characterId))
+                }catch{
+                    setError("Failed to remove character")
+                }
+            },
+            onCancel: () => setConfirmDialog(null)
         })
+    }
+
+    // Handle character assigned from modal
+    const handleCharacterAssigned = (character: PlayerCharacter): void => {
+        setCharacters([...characters, character])
+        setShowAssignModal(false)
     }
 
     if(loading) return(
@@ -114,7 +123,7 @@ function CampaignDetails() {
                 <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-white">Characters</h2>
                 <button
-                    onClick={() => navigate(`/campaigns/${id}/characters/new`)}
+                    onClick={() => setShowAssignModal(true)}
                     className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded transition-colors"
                 >
                     + Add Character
@@ -126,7 +135,7 @@ function CampaignDetails() {
                         icon="⚔️"
                         message="No characters yet — your adventure awaits"
                         actionLabel="Create your first character"
-                        onAction={() => navigate(`/campaigns/${id}/characters/new`)}
+                        onAction={() => setShowAssignModal(true)}
                     />
                 ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -139,7 +148,7 @@ function CampaignDetails() {
                         {character.name}
                         </h3>
                         <p className="text-amber-500 text-sm mb-1">
-                        {character.race} {character.characterClass}
+                        {character.race} - {character.characterClass}
                         </p>
                         <p className="text-gray-400 text-sm mb-3">
                         Level {character.level}
@@ -151,16 +160,16 @@ function CampaignDetails() {
                         )}
                         <div className="flex justify-end gap-2 mt-4">
                         <button
-                            onClick={() => navigate(`/campaigns/${id}/characters/${character.id}/edit`)}
+                            onClick={() => navigate(`/characters/${character.id}/edit`)}
                             className="text-gray-400 hover:text-white text-sm px-3 py-1 rounded border border-gray-600 hover:border-gray-400 transition-colors"
                         >
                             Edit
                         </button>
                         <button
-                            onClick={() => handleDeleteCharacter(character.id)}
+                            onClick={() => handleRemoveCharacter(character.id)}
                             className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
                         >
-                            Delete
+                            Remove
                         </button>
                         </div>
                     </div>
@@ -170,9 +179,20 @@ function CampaignDetails() {
             </div>
 
             
+            {/* Modals */}
+            {showAssignModal && campaign && (
+            <AssignCharacterModal
+                campaignId={campaign.id}
+                assignedCharacters={characters}
+                onAssign={handleCharacterAssigned}
+                onClose={() => setShowAssignModal(false)}
+            />
+            )}
+
             {confirmDialog && (
             <ConfirmDialog
                 message={confirmDialog.message}
+                confirmLabel={confirmDialog.confirmLabel}
                 onConfirm={confirmDialog.onConfirm}
                 onCancel={confirmDialog.onCancel}
             />

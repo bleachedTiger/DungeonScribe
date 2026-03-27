@@ -113,6 +113,7 @@ function CampaignList() {
       {confirmDialog && (
         <ConfirmDialog
           message={confirmDialog.message}
+          confirmLabel={confirmDialog.confirmLabel}
           onConfirm={confirmDialog.onConfirm}
           onCancel={confirmDialog.onCancel}
         />

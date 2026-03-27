@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import Layout from '../../components/Layout';
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import Layout from '../../components/Layout'
 import ErrorMessage from '../../components/ErrorMessage'
-import { characterService } from '../../api/characterService';
+import { characterService } from '../../api/characterService'
 
-function CharacterForm(){
-    const {id, characterId} = useParams<{id: string, characterId: string}>();
-    const isEditing = !!characterId;
+function CharacterForm() {
+    const {id} = useParams<{ id: string }>()
+    const isEditing = !!id;
     const navigate = useNavigate();
 
     const [name, setName] = useState<string>('');
@@ -14,61 +14,64 @@ function CharacterForm(){
     const [race, setRace] = useState<string>('');
     const [level, setLevel] = useState<number>(1);
     const [backstory, setBackstory] = useState<string>('');
+    const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string>('');
 
-    useEffect(()=>{
-        if(isEditing && id && characterId){
-            characterService.getOne(Number(id), Number(characterId))
+    useEffect(() => {
+        document.title = isEditing ? "Edit Character - DungeonScribe" : "New Character - DungeonScribe";
+
+        if (isEditing && id) {
+            characterService.getOne(Number(id))
             .then(res => {
-                setName(res.data.name)
-                setCharacterClass(res.data.characterClass)
-                setRace(res.data.race)
-                setLevel(res.data.level)
-                setBackstory(res.data.backstory || '')
+                setName(res.data.name);
+                setCharacterClass(res.data.characterClass);
+                setRace(res.data.race);
+                setLevel(res.data.level);
+                setBackstory(res.data.backstory || '');
             })
-            .catch(() => setError("Failed to load Character"));
-            document.title = `DungeonScribe | Edit ${name || 'Character'}`;
-        } else {
-            document.title = 'DungeonScribe | New Character';
+            .catch(() => setError("Failed to load character"));
         }
-    },[characterId, id, isEditing, name])
+    }, [id, isEditing]);   
 
-    const handleSubmit = async (e:React.FormEvent): Promise<void> => {
-        e.preventDefault();
+    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
+        e.preventDefault()
         setLoading(true);
         setError('');
 
-        try{
-            if(isEditing && id){
-                characterService.update(Number(id), Number(characterId), {
+        try {
+            if(isEditing && id) {
+                await characterService.update(Number(id), { 
                     name, characterClass, race, level, backstory
-                })
-            }else{
-                await characterService.create(Number(id), {name, characterClass, race, level, backstory})
+                });
+            } else {
+            console.log('About to call characterService.create')
+            await characterService.create({ 
+                name, characterClass, race, level, backstory
+            })
             }
-            navigate(`/campaigns/${id}`);
-        }catch{
-            setError("Failed to save Character")
-        }finally{
+            navigate('/characters');
+        } catch (err) {
+            setError('Failed to save character');
+        } finally {
             setLoading(false);
         }
     }
-    return(
+
+    return (
         <Layout>
             <div className="max-w-2xl mx-auto">
                 <button
-                    onClick={() => navigate(`/campaigns/$id`)}
+                    onClick={() => navigate('/characters')}
                     className="text-gray-400 hover:text-white text-sm mb-6 flex items-center gap-1"
-                >
-                ← Back to Campaign
-                </button>
+                    >
+                        ← Back to Characters
+                </button>   
+                
+                <h1 className='text-3xl font-bold text-white mb-8'>
+                    {isEditing ? "Edit Character" : "New Character"}
+                </h1>
 
-                <h1 className="text-3xl font-bold text-white mb-8">{isEditing ? "Editing Character": "New Character"}</h1>
-
-                {error && (
-                    <ErrorMessage message={error}/>
-                )}
+                {error && <ErrorMessage message={error} />}
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
@@ -98,7 +101,6 @@ function CharacterForm(){
                             required
                         />
                         </div>
-
                         <div>
                         <label className="block text-gray-300 font-medium mb-2">
                             Race
@@ -151,13 +153,13 @@ function CharacterForm(){
                         </button>
                         <button
                         type="button"
-                        onClick={() => navigate(`/campaigns/${id}`)}
+                        onClick={() => navigate('/characters')}
                         className="bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold px-6 py-2 rounded transition-colors"
                         >
                         Cancel
                         </button>
                     </div>
-                    </form>
+                </form>
             </div>
         </Layout>
     )
