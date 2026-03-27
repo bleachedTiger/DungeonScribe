@@ -10,6 +10,5 @@ public class CharacterResponse {
     private String race;
     private Integer level;
     private String backstory;
-    private Long campaignId;
-    private String campaignName;
+    private String ownerUsername;
 }

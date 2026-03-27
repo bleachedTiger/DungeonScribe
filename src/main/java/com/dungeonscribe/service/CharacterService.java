@@ -19,7 +19,6 @@ public class CharacterService {
     private final CampaignRepository campaignRepository;
     private final AuthService authService;
 
-    //Convert Character Entity to DTO
     private CharacterResponse toResponse(PlayerCharacter character) {
         CharacterResponse response = new CharacterResponse();
         response.setId(character.getId());
@@ -28,23 +27,40 @@ public class CharacterService {
         response.setRace(character.getRace());
         response.setLevel(character.getLevel());
         response.setBackstory(character.getBackstory());
-        response.setCampaignId(character.getCampaign().getId());
-        response.setCampaignName(character.getCampaign().getName());
+        response.setOwnerUsername(character.getOwner().getUsername());
         return response;
     }
 
-    //Helper to verify campaign ownership
-    private Campaign getOwnedCampaign(Long campaignId){
+    // Get all characters owned by current user
+    public List<CharacterResponse> getMyCharacters() {
         User currentUser = authService.getCurrentUser();
-        return campaignRepository
-                .findByIdAndOwner(campaignId, currentUser)
-                .orElseThrow(() -> new RuntimeException("Campaign not found"));
+        return characterRepository.findByOwner(currentUser)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
-    public CharacterResponse createCharacter(
-            Long campaignId, CharacterRequest request){
+    // Get a single character - owner or campaign member can view
+    public CharacterResponse getCharacter(Long id) {
+        User currentUser = authService.getCurrentUser();
+        PlayerCharacter character = characterRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Character not found"));
 
-        Campaign campaign = getOwnedCampaign(campaignId);
+        // Check if user is owner OR is on a campaign with this character
+        boolean isOwner = character.getOwner().getId().equals(currentUser.getId());;
+        boolean isOnCampaign = character.getCampaigns().stream()
+                .anyMatch(c -> c.getOwner().getId().equals(currentUser.getId()));
+
+        if (!isOwner && !isOnCampaign) {
+            throw new RuntimeException("Not authorized to view this character");
+        }
+
+        return toResponse(character);
+    }
+
+    // Create a character - independent of any campaign
+    public CharacterResponse createCharacter(CharacterRequest request) {
+        User currentUser = authService.getCurrentUser();
 
         PlayerCharacter character = new PlayerCharacter();
         character.setName(request.getName());
@@ -52,31 +68,15 @@ public class CharacterService {
         character.setRace(request.getRace());
         character.setLevel(request.getLevel());
         character.setBackstory(request.getBackstory());
-        character.setCampaign(campaign);
+        character.setOwner(currentUser);
 
         return toResponse(characterRepository.save(character));
     }
 
-    public List<CharacterResponse> getCharacters(Long campaignId){
-        Campaign campaign = getOwnedCampaign(campaignId);
-        return characterRepository.findByCampaign(campaign)
-                .stream()
-                .map(this::toResponse)
-                .toList();
-    }
-
-    public CharacterResponse getCharacter(Long campaignId, Long characterId){
-        Campaign campaign = getOwnedCampaign(campaignId);
-        PlayerCharacter playerCharacter = characterRepository
-                .findByIdAndCampaign(characterId, campaign)
-                .orElseThrow(() -> new RuntimeException("Character not found"));
-        return toResponse(playerCharacter);
-    }
-
-    public CharacterResponse updateCharacter(Long campaignId, Long characterId, CharacterRequest request){
-        Campaign campaign = getOwnedCampaign(campaignId);
-        PlayerCharacter character = characterRepository
-                .findByIdAndCampaign(characterId, campaign)
+    // Update a character - owner only
+    public CharacterResponse updateCharacter(Long id, CharacterRequest request) {
+        User currentUser = authService.getCurrentUser();
+        PlayerCharacter character = characterRepository.findByIdAndOwner(id, currentUser)
                 .orElseThrow(() -> new RuntimeException("Character not found"));
 
         character.setName(request.getName());
@@ -88,11 +88,57 @@ public class CharacterService {
         return toResponse(characterRepository.save(character));
     }
 
-    public void deleteCharacter(Long campaignId, Long characterId){
-        Campaign campaign = getOwnedCampaign(campaignId);
-        PlayerCharacter playerCharacter = characterRepository
-                .findByIdAndCampaign(characterId, campaign)
+    // Delete a character - owner only
+    public void deleteCharacter(Long id) {
+        User currentUser = authService.getCurrentUser();
+        PlayerCharacter character = characterRepository.findByIdAndOwner(id, currentUser)
                 .orElseThrow(() -> new RuntimeException("Character not found"));
-        characterRepository.delete(playerCharacter);
+
+        // Remove from all campaigns before deleting
+        for (Campaign campaign : character.getCampaigns()) {
+            campaign.getCharacters().remove(character);;
+            campaignRepository.save(campaign);
+        }
+
+        characterRepository.delete(character);
+    }
+
+    // Add character to campaign - campaign owner only
+    public void addCharacterToCampaign(Long campaignId, Long characterId) {
+        User currentUser = authService.getCurrentUser();
+
+        Campaign campaign = campaignRepository.findByIdAndOwner(campaignId, currentUser)
+                .orElseThrow(() -> new RuntimeException("Campaign not found"));
+
+        PlayerCharacter character = characterRepository.findById(characterId)
+                .orElseThrow(() -> new RuntimeException("Character not found"));
+
+        campaign.getCharacters().add(character);
+        campaignRepository.save(campaign);
+    }
+
+    // Remove character from campaign - campaign owner only
+    public void removeCharacterFromCampaign(Long campaignId, Long characterId) {
+        User currentUser = authService.getCurrentUser();
+
+        Campaign campaign = campaignRepository.findByIdAndOwner(campaignId, currentUser)
+                .orElseThrow(() -> new RuntimeException("Campaign not found"));
+
+        PlayerCharacter character = characterRepository.findById(characterId)
+                .orElseThrow(() -> new RuntimeException("Character not found"));
+
+        campaign.getCharacters().remove(character);
+        campaignRepository.save(campaign);
+    }
+
+    // Get all characters assigned to a campaign
+    public List<CharacterResponse> getCampaignCharacters(Long campaignId) {
+        User currentUser = authService.getCurrentUser();
+        Campaign campaign = campaignRepository.findByIdAndOwner(campaignId, currentUser)
+                .orElseThrow(() -> new RuntimeException("Campaign not found"));
+
+        return campaign.getCharacters().stream()
+                .map(this::toResponse)
+                .toList();
     }
 }
