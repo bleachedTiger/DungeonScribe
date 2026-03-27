@@ -36,7 +36,8 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",
                 "https://dungeon-scribe.vercel.app",
-                "https://dungeonscribe.meeplehq.com"
+                "https://dungeonscribe.meeplehq.com",
+                "https://dungeon-scribe.meeplehq.com"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
