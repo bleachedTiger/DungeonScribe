@@ -116,13 +116,6 @@ function Navbar() {
               Spells
             </Link>
             <Link
-              to="/dnd/spells"
-              onClick={handleNavClick}
-              className="text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded transition-colors"
-            >
-              Spells
-            </Link>
-            <Link
               to="/dnd/monsters"
               onClick={handleNavClick}
               className="text-gray-300 hover:text-white hover:bg-gray-700 px-3 py-2 rounded transition-colors"
