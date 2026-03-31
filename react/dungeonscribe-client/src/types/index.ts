@@ -133,6 +133,25 @@ export interface Open5eResponse<T> {
 }
 
 // ===========================
+// Session Notes
+// ===========================
+export interface SessionNote {
+  id: number
+  sessionNumber: number
+  title: string
+  sessionDate: string
+  summary: string
+  createdAt: string
+  campaignId: number
+}
+
+export interface SessionNoteRequest {
+  title: string
+  sessionDate: string
+  summary: string
+}
+
+// ===========================
 // UI Types
 // ===========================
 export interface ConfirmDialogState {

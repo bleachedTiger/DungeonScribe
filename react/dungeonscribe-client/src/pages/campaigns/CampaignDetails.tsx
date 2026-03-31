@@ -9,6 +9,9 @@ import { campaignService } from "../../api/campaignService";
 import { characterService } from "../../api/characterService"
 import AssignCharacterModal from "../../components/AssignCharacterModal";
 import { Campaign, PlayerCharacter, ConfirmDialogState } from "../../types";
+import SessionNoteForm from '../../components/SessionNoteForm'
+import { sessionService } from '../../api/sessionService'
+import { SessionNote, SessionNoteRequest } from '../../types'
 
 function CampaignDetails() {
     const {id} = useParams<{id: string}>();
@@ -20,6 +23,9 @@ function CampaignDetails() {
     const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState | null>(null);
     const [error, setError] = useState<string>('');
     const [showAssignModal, setShowAssignModal] = useState<boolean>(false)
+    const [sessions, setSessions] = useState<SessionNote[]>([])
+    const [showSessionForm, setShowSessionForm] = useState<boolean>(false)
+    const [editingSession, setEditingSession] = useState<SessionNote | null>(null)
 
     useEffect(() => {
         fetchData();
@@ -32,12 +38,14 @@ function CampaignDetails() {
 
     const fetchData = async ():Promise<void> => {
         try{
-            const[campaignRes, charactersRes] = await Promise.all([
+            const[campaignRes, charactersRes, sessionsRes] = await Promise.all([
                 campaignService.getOne(Number(id)),
-                characterService.getByCampaignCharacters(Number(id))
+                characterService.getByCampaignCharacters(Number(id)),
+                sessionService.getAll(Number(id)),
             ])
             setCampaign(campaignRes.data);
             setCharacters(charactersRes.data);
+            setSessions(sessionsRes.data);
         }catch{
             setError("Failed to load Campaign");
         }finally{
@@ -67,6 +75,50 @@ function CampaignDetails() {
         setCharacters([...characters, character])
         setShowAssignModal(false)
     }
+
+    const handleCreateSession = async (data: SessionNoteRequest): Promise<void> => {
+        const response = await sessionService.create(Number(id), data)
+        setSessions([...sessions, response.data])
+        setShowSessionForm(false)
+    }
+
+    const handleUpdateSession = async (data: SessionNoteRequest): Promise<void> => {
+        if (!editingSession) return
+        const response = await sessionService.update(
+            Number(id), editingSession.id, data)
+        setSessions(sessions.map(s =>
+            s.id === editingSession.id ? response.data : s))
+        setEditingSession(null)
+    }
+
+    const handleDeleteSession = (sessionId: number): void => {
+        setConfirmDialog({
+            message: 'Delete this session note? This cannot be undone.',
+            confirmLabel: 'Delete',
+            onConfirm: async () => {
+            setConfirmDialog(null)
+            try {
+                await sessionService.delete(Number(id), sessionId)
+                setSessions(sessions.filter(s => s.id !== sessionId))
+            } catch {
+                setError('Failed to delete session')
+            }
+            },
+            onCancel: () => setConfirmDialog(null)
+        })
+    }
+
+    const formatSessionDate = (dateString: string): string => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+        })
+    }
+
 
     if(loading) return(
         <Layout>
@@ -178,6 +230,71 @@ function CampaignDetails() {
                 )}
             </div>
 
+            {/* Sessions Section */}
+            <div className="mt-10">
+            <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-white">Session Notes</h2>
+                <button
+                onClick={() => setShowSessionForm(true)}
+                className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded transition-colors"
+                >
+                + Add Session
+                </button>
+            </div>
+
+            {sessions.length === 0 ? (
+                <EmptyState
+                icon="📜"
+                message="No sessions recorded yet"
+                actionLabel="Record your first session"
+                onAction={() => setShowSessionForm(true)}
+                />
+            ) : (
+                <div className="space-y-4">
+                {sessions.map(session => (
+                    <div
+                    key={session.id}
+                    className="bg-gray-800 rounded-lg border border-gray-700 hover:border-amber-500 transition-colors p-5"
+                    >
+                    <div className="flex items-start justify-between mb-3">
+                        <div>
+                        <div className="flex items-center gap-3">
+                            <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded">
+                            Session {session.sessionNumber}
+                            </span>
+                            <h3 className="text-white font-semibold text-lg">
+                            {session.title}
+                            </h3>
+                        </div>
+                        <p className="text-gray-400 text-sm mt-1">
+                            {formatSessionDate(session.sessionDate)}
+                        </p>
+                        </div>
+                        <div className="flex gap-2">
+                        <button
+                            onClick={() => setEditingSession(session)}
+                            className="text-gray-400 hover:text-white text-sm px-3 py-1 rounded border border-gray-600 hover:border-gray-400 transition-colors"
+                        >
+                            Edit
+                        </button>
+                        <button
+                            onClick={() => handleDeleteSession(session.id)}
+                            className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
+                        >
+                            Delete
+                        </button>
+                        </div>
+                    </div>
+                    {session.summary && (
+                        <p className="text-gray-300 text-sm leading-relaxed">
+                        {session.summary}
+                        </p>
+                    )}
+                    </div>
+                ))}
+                </div>
+            )}
+            </div>
             
             {/* Modals */}
             {showAssignModal && campaign && (
@@ -196,6 +313,21 @@ function CampaignDetails() {
                 onConfirm={confirmDialog.onConfirm}
                 onCancel={confirmDialog.onCancel}
             />
+            )}
+
+            {showSessionForm && (
+                <SessionNoteForm
+                    onSubmit={handleCreateSession}
+                    onCancel={() => setShowSessionForm(false)}
+                />
+            )}
+
+            {editingSession && (
+                <SessionNoteForm
+                    session={editingSession}
+                    onSubmit={handleUpdateSession}
+                    onCancel={() => setEditingSession(null)}
+                />
             )}
         </Layout>
     )
