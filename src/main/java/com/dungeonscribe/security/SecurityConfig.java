@@ -37,7 +37,8 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "https://dungeon-scribe.vercel.app",
                 "https://dungeonscribe.meeplehq.com",
-                "https://dungeon-scribe.meeplehq.com"
+                "https://dungeon-scribe.meeplehq.com",
+                "https://api.dungeon-scribe.meeple.com"
         ));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
