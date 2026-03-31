@@ -26,6 +26,8 @@ function CampaignDetails() {
     const [sessions, setSessions] = useState<SessionNote[]>([])
     const [showSessionForm, setShowSessionForm] = useState<boolean>(false)
     const [editingSession, setEditingSession] = useState<SessionNote | null>(null)
+    const [charactersExpanded, setCharactersExpanded] = useState<boolean>(true)
+    const [sessionsExpanded, setSessionsExpanded] = useState<boolean>(true)
 
     useEffect(() => {
         fetchData();
@@ -74,12 +76,14 @@ function CampaignDetails() {
     const handleCharacterAssigned = (character: PlayerCharacter): void => {
         setCharacters([...characters, character])
         setShowAssignModal(false)
+        setCharactersExpanded(true) 
     }
 
     const handleCreateSession = async (data: SessionNoteRequest): Promise<void> => {
         const response = await sessionService.create(Number(id), data)
         setSessions([...sessions, response.data])
         setShowSessionForm(false)
+        setSessionsExpanded(true)
     }
 
     const handleUpdateSession = async (data: SessionNoteRequest): Promise<void> => {
@@ -170,132 +174,176 @@ function CampaignDetails() {
                 />
             )}
 
-            {/* Characters Section */}
+           {/* Characters Section */}
             <div>
                 <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">Characters</h2>
-                <button
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-2xl font-bold text-white">Characters</h2>
+                        {/* Collapse toggle - mobile only */}
+                        <button
+                            onClick={() => setCharactersExpanded(!charactersExpanded)}
+                            className="md:hidden text-gray-400 hover:text-white transition-colors"
+                        >
+                            {charactersExpanded ? '▲' : '▼'}
+                        </button>
+                    </div>
+                    <button
                     onClick={() => setShowAssignModal(true)}
                     className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded transition-colors"
-                >
+                    >
                     + Add Character
-                </button>
+                    </button>
                 </div>
 
-                {characters.length === 0 ? (
+                {/* Content - always visible on desktop, collapsible on mobile */}
+                <div className={`${charactersExpanded ? 'block' : 'hidden'} md:block`}>
+                    {characters.length === 0 ? (
                     <EmptyState
                         icon="⚔️"
                         message="No characters yet — your adventure awaits"
                         actionLabel="Create your first character"
                         onAction={() => setShowAssignModal(true)}
                     />
-                ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {characters.map(character => (
-                    <div
-                        key={character.id}
-                        className="bg-gray-800 rounded-lg p-5 border border-gray-700 hover:border-amber-500 transition-colors"
-                    >
-                        <h3 className="text-lg font-semibold text-white mb-1">
-                        {character.name}
-                        </h3>
-                        <p className="text-amber-500 text-sm mb-1">
-                        {character.race} - {character.characterClass}
-                        </p>
-                        <p className="text-gray-400 text-sm mb-3">
-                        Level {character.level}
-                        </p>
-                        {character.backstory && (
-                        <p className="text-gray-500 text-sm line-clamp-2">
-                            {character.backstory}
-                        </p>
-                        )}
-                        <div className="flex justify-end gap-2 mt-4">
-                        <button
-                            onClick={() => navigate(`/characters/${character.id}/edit`)}
-                            className="text-gray-400 hover:text-white text-sm px-3 py-1 rounded border border-gray-600 hover:border-gray-400 transition-colors"
+                    ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {characters.map(character => (
+                        <div
+                            key={character.id}
+                            className="bg-gray-800 rounded-lg p-5 border border-gray-700 hover:border-amber-500 transition-colors"
                         >
-                            Edit
-                        </button>
-                        <button
-                            onClick={() => handleRemoveCharacter(character.id)}
-                            className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
-                        >
-                            Remove
-                        </button>
+                            <h3 className="text-lg font-semibold text-white mb-1">
+                            {character.name}
+                            </h3>
+                            <p className="text-amber-500 text-sm mb-1">
+                            {character.race} - {character.characterClass}
+                            </p>
+                            <p className="text-gray-400 text-sm mb-3">
+                            Level {character.level}
+                            </p>
+                            {character.backstory && (
+                            <p className="text-gray-500 text-sm line-clamp-2">
+                                {character.backstory}
+                            </p>
+                            )}
+                            <div className="flex justify-end gap-2 mt-4">
+                            <button
+                                onClick={() => navigate(`/characters/${character.id}/edit`)}
+                                className="text-gray-400 hover:text-white text-sm px-3 py-1 rounded border border-gray-600 hover:border-gray-400 transition-colors"
+                            >
+                                Edit
+                            </button>
+                            <button
+                                onClick={() => handleRemoveCharacter(character.id)}
+                                className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
+                            >
+                                Remove
+                            </button>
+                            </div>
                         </div>
+                        ))}
                     </div>
-                    ))}
+                    )}
                 </div>
-                )}
             </div>
 
             {/* Sessions Section */}
             <div className="mt-10">
-            <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-white">Session Notes</h2>
-                <button
-                onClick={() => setShowSessionForm(true)}
-                className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded transition-colors"
-                >
-                + Add Session
-                </button>
-            </div>
-
-            {sessions.length === 0 ? (
-                <EmptyState
-                icon="📜"
-                message="No sessions recorded yet"
-                actionLabel="Record your first session"
-                onAction={() => setShowSessionForm(true)}
-                />
-            ) : (
-                <div className="space-y-4">
-                {sessions.map(session => (
-                    <div
-                    key={session.id}
-                    className="bg-gray-800 rounded-lg border border-gray-700 hover:border-amber-500 transition-colors p-5"
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-bold text-white">Session Notes</h2>
+                    {/* Collapse toggle - mobile only */}
+                    <button
+                        onClick={() => setSessionsExpanded(!sessionsExpanded)}
+                        className="md:hidden text-gray-400 hover:text-white transition-colors"
                     >
-                    <div className="flex items-start justify-between mb-3">
-                        <div>
-                        <div className="flex items-center gap-3">
-                            <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded">
-                            Session {session.sessionNumber}
-                            </span>
-                            <h3 className="text-white font-semibold text-lg">
-                            {session.title}
-                            </h3>
-                        </div>
-                        <p className="text-gray-400 text-sm mt-1">
-                            {formatSessionDate(session.sessionDate)}
-                        </p>
-                        </div>
-                        <div className="flex gap-2">
-                        <button
-                            onClick={() => setEditingSession(session)}
-                            className="text-gray-400 hover:text-white text-sm px-3 py-1 rounded border border-gray-600 hover:border-gray-400 transition-colors"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            onClick={() => handleDeleteSession(session.id)}
-                            className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
-                        >
-                            Delete
-                        </button>
-                        </div>
+                        {sessionsExpanded ? '▲' : '▼'}
+                    </button>
                     </div>
-                    {session.summary && (
-                        <p className="text-gray-300 text-sm leading-relaxed">
-                        {session.summary}
-                        </p>
-                    )}
-                    </div>
-                ))}
+                    <button
+                    onClick={() => setShowSessionForm(true)}
+                    className="bg-amber-600 hover:bg-amber-500 text-white font-semibold px-4 py-2 rounded transition-colors"
+                    >
+                    + Add Session
+                    </button>
                 </div>
-            )}
+
+                {/* Content - always visible on desktop, collapsible on mobile */}
+                <div className={`${sessionsExpanded ? 'block' : 'hidden'} md:block`}>
+                    {sessions.length === 0 ? (
+                    <EmptyState
+                        icon="📜"
+                        message="No sessions recorded yet"
+                        actionLabel="Record your first session"
+                        onAction={() => setShowSessionForm(true)}
+                    />
+                    ) : (
+                    <div className="space-y-4">
+                        {sessions.map(session => (
+                        <div
+                            key={session.id}
+                            className="bg-gray-800 rounded-lg border border-gray-700 hover:border-amber-500 transition-colors p-5"
+                        >
+                            {/* Mobile layout: badge + buttons on top row, title below */}
+                            {/* Desktop layout: badge + title on left, buttons on right */}
+                            <div className="flex items-start justify-between mb-3">
+                                <div className="flex-1 min-w-0">
+                                    {/* Top row - always badge + buttons inline */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="bg-amber-600 text-white text-xs font-bold px-2 py-1 rounded shrink-0">
+                                            Session {session.sessionNumber}
+                                        </span>
+                                        {/* Buttons inline with badge on mobile */}
+                                        <div className="flex gap-2 md:hidden">
+                                            <button
+                                            onClick={() => setEditingSession(session)}
+                                            className="text-gray-400 hover:text-white text-sm px-3 py-1 rounded border border-gray-600 hover:border-gray-400 transition-colors"
+                                            >
+                                            Edit
+                                            </button>
+                                            <button
+                                            onClick={() => handleDeleteSession(session.id)}
+                                            className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
+                                            >
+                                            Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {/* Title - below badge on mobile, inline on desktop */}
+                                    <h3 className="text-white font-semibold text-lg mt-1 md:mt-0 md:inline md:ml-3">
+                                        {session.title}
+                                    </h3>
+                                    <p className="text-gray-400 text-sm mt-1">
+                                        {formatSessionDate(session.sessionDate)}
+                                    </p>
+                                </div>
+                                {/* Buttons on right - desktop only */}
+                                <div className="hidden md:flex gap-2 ml-4 shrink-0">
+                                    <button
+                                    onClick={() => setEditingSession(session)}
+                                    className="text-gray-400 hover:text-white text-sm px-3 py-1 rounded border border-gray-600 hover:border-gray-400 transition-colors"
+                                    >
+                                    Edit
+                                    </button>
+                                    <button
+                                    onClick={() => handleDeleteSession(session.id)}
+                                    className="text-gray-400 hover:text-red-400 text-sm px-3 py-1 rounded border border-gray-600 hover:border-red-400 transition-colors"
+                                    >
+                                    Delete
+                                    </button>
+                                </div>
+                            </div>
+                            {session.summary && (
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                                {session.summary}
+                            </p>
+                            )}
+                        </div>
+                        ))}
+                    </div>
+                    )}
+                </div>
             </div>
-            
+                        
             {/* Modals */}
             {showAssignModal && campaign && (
             <AssignCharacterModal
